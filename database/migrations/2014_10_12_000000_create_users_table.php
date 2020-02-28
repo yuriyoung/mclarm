@@ -59,7 +59,7 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->string('device')->nullable()->comment('登录设备');
             $table->string('ip')->nullable()->comment('登录ip');
-            $table->timestamp('created_at')->useCurrent()->comment('登录日期');
+            $table->timestamp('signed_at')->useCurrent()->comment('登录日期');
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });

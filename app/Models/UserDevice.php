@@ -25,6 +25,10 @@ class UserDevice extends Model
     protected $hidden = [
     ];
 
+    protected $casts = [
+        'signed_at' => 'datetime',
+    ];
+
     public function setUpdatedAt($value)
     {
         // Do nothing.
