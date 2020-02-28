@@ -48,7 +48,7 @@ $factory->define(App\Models\UserDevice::class, function (Faker $faker) {
     return [
         'ip' => $faker->ipv4,
         'device' => $faker->randomElement(['手机', '台式机', '网页', '其他']),
-        'created_at' => $faker->dateTime
+        'signed_at' => $faker->dateTime
     ];
 });
 
