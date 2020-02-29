@@ -27,28 +27,20 @@ $factory->define(App\Models\User::class, function (Faker $faker) {
 });
 
 $factory->define(App\Models\UserDetail::class, function (Faker $faker) {
-    $gender = $faker->randomElement(['男', '女']);
+    $gender = $faker->randomElement(['male', 'female', 'neuter']);
     return [
         'first_name' => $faker->firstName($gender),
         'last_name' => $faker->lastName,
         'avatar' => $faker->imageUrl(640, 480, 'cats'), // http://lorempixel.com/
 //        'qrcode' => $faker->url,
         'gender' => $gender,
-        'birthday' => $faker->dateTimeBetween(),
+        'birthday' => $faker->date('Y-m-d', 'now'),
         'career' => $faker->jobTitle,
-//        'website' => $faker->url,
+        // $faker->url Exception  a error if faker_locale = 'zh_CN'
+        'website' => 'www.' . $faker->word() . $faker->randomElement(['.com', '.org', '.io', '.cn', '.me']),
         'address_home' => $faker->streetAddress,
         'address_work' => $faker->address,
         'signature' => $faker->text(120),
         'about' => $faker->paragraph(5),
     ];
 });
-
-$factory->define(App\Models\UserDevice::class, function (Faker $faker) {
-    return [
-        'ip' => $faker->ipv4,
-        'device' => $faker->randomElement(['手机', '台式机', '网页', '其他']),
-        'signed_at' => $faker->dateTime
-    ];
-});
-
