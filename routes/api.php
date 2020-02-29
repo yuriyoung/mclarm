@@ -18,6 +18,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::group(['prefix' => 'v1', 'middleware' => 'api', 'namespace' => 'Api'], function () {
+Route::group(['prefix' => 'v1', 'namespace' => 'Api'], function () {
     Route::apiResource('users', 'UserController');
+    Route::get('users/{user}/detail', 'UserController@detail')->name('users.detail');
 });
