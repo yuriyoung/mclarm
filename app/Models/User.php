@@ -39,17 +39,11 @@ class User extends Authenticatable
 
     public function getVerifiedAtAttribute()
     {
-        return (string)$this->email_verified_at;
+        return $this->email_verified_at;
     }
 
     public function detail()
     {
         return $this->hasOne(UserDetail::class)->withDefault();
     }
-
-    public function loginDevices()
-    {
-        return $this->hasMany(UserDevice::class);
-    }
-
 }
