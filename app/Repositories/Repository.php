@@ -3,14 +3,15 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\RepositoryException;
 use Closure;
 use Exception;
 use App\Contracts\RepositoryInterface;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Illuminate\Foundation\Application;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -158,6 +159,7 @@ abstract class Repository implements RepositoryInterface
     /**
      * @param array $columns
      * @return Collection
+     * @throws RepositoryException
      */
     public function get($columns = ['*'])
     {
@@ -169,6 +171,7 @@ abstract class Repository implements RepositoryInterface
      *
      * @param array $columns
      * @return Builder|\Illuminate\Database\Eloquent\Model
+     * @throws RepositoryException
      */
     public function first($columns = ['*'])
     {
@@ -185,6 +188,7 @@ abstract class Repository implements RepositoryInterface
      *
      * @param array $attributes
      * @return Builder|\Illuminate\Database\Eloquent\Model|mixed
+     * @throws RepositoryException
      */
     public function firstOrNew(array $attributes = [])
     {
@@ -201,6 +205,7 @@ abstract class Repository implements RepositoryInterface
      *
      * @param array $attributes
      * @return Builder|\Illuminate\Database\Eloquent\Model|mixed
+     * @throws RepositoryException
      */
     public function firstOrCreate(array $attributes = [])
     {
@@ -218,6 +223,7 @@ abstract class Repository implements RepositoryInterface
      * @param int $id
      * @param array $columns
      * @return Builder|Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|mixed
+     * @throws RepositoryException
      */
     public function find(int $id, array $columns = ['*'])
     {
@@ -235,7 +241,7 @@ abstract class Repository implements RepositoryInterface
      * @param $value
      * @param array $columns
      * @return Builder[]|\Illuminate\Database\Eloquent\Collection|mixed
-
+     * @throws RepositoryException
      */
     public function findBy(string $attribute, $value, array $columns = ['*'])
     {
@@ -252,7 +258,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $where
      * @param array $columns
      * @return Builder[]|\Illuminate\Database\Eloquent\Collection|mixed
-
+     * @throws RepositoryException
      */
     public function findWhere(array $where, array $columns = ['*'])
     {
@@ -272,7 +278,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $values
      * @param array $columns
      * @return Builder[]|\Illuminate\Database\Eloquent\Collection|mixed
-
+     * @throws RepositoryException
      */
     public function findWhereIn($field, array $values, array $columns = ['*'])
     {
@@ -291,7 +297,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $values
      * @param array $columns
      * @return Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|Collection|mixed
-
+     * @throws RepositoryException
      */
     public function findWhereNotIn($field, array $values, array $columns = ['*'])
     {
@@ -310,7 +316,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $values
      * @param array $columns
      * @return Builder[]|\Illuminate\Database\Eloquent\Collection|mixed
-
+     * @throws RepositoryException
      */
     public function findWhereBetween($field, array $values, array $columns = ['*'])
     {
@@ -329,7 +335,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $values
      * @param array $columns
      * @return Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|Collection
-
+     * @throws RepositoryException
      */
     public function findWhereNotBetween($field, array $values, array $columns = ['*'])
     {
@@ -347,7 +353,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $where
      * @param array $columns
      * @return Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model[]|mixed
-
+     * @throws RepositoryException
      */
     public function findFirstWhere(array $where, array $columns = ['*'])
     {
@@ -367,7 +373,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $where
      * @param string $column
      * @return int
-
+     * @throws RepositoryException
      */
     public function findCountWhere(array $where, $column = '*'): int
     {
@@ -386,7 +392,7 @@ abstract class Repository implements RepositoryInterface
      * @param int $id
      * @param array $columns
      * @return Model|mixed
-
+     * @throws RepositoryException
      */
     public function findTrashed(int $id, array $columns = ['*'])
     {
@@ -403,7 +409,7 @@ abstract class Repository implements RepositoryInterface
      *
      * @param array $columns
      * @return Collection
-
+     * @throws RepositoryException
      */
     public function allTrashed(array $columns = ['*']): Collection
     {
@@ -422,8 +428,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $attributes
      * @param bool $force
      * @return Builder|\Illuminate\Database\Eloquent\Model|mixed
-
-     * @throws ValidationException
+     * @throws RepositoryException
      */
     public function create(array $attributes, bool $force = false)
     {
@@ -447,16 +452,22 @@ abstract class Repository implements RepositoryInterface
      * @param array $attributes
      * @param bool $force
      * @return Builder|Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|mixed
-
-     * @throws ValidationException
+     * @throws RepositoryException
      */
     public function update($id, array $attributes, bool $force = false)
     {
         $model = $this->getBuilder()->findOrFail($id);
         ($force) ? $model->forceFill($attributes) : $model->fill($attributes);
 
-        // TODO： to update relations, use the push() instead of the save()
-        $model->save();
+        // use the push() to update relation
+        $relations = array_keys($model->getRelations()); // ['relation' => relationModel, ...]
+        foreach ($relations as $relation) {
+            if($model->{$relation}) {
+                $model->{$relation}->fill($attributes["{$relation}"] ?? $attributes);
+            }
+        }
+
+        (empty($relations)) ? $model->save() : $model->push();
         if ($this->withFresh)
             $model->fresh();
 
@@ -475,7 +486,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $attributes
      * @param bool $force
      * @return Builder|Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model
-
+     * @throws RepositoryException
      */
     public function updateWithRelations($id, array $relations, array $attributes, bool $force = false)
     {
@@ -483,7 +494,9 @@ abstract class Repository implements RepositoryInterface
         ($force) ? $model->forceFill($attributes) : $model->fill($attributes);
 
         foreach ($relations as $relation) {
-            $model->{$relation}->fill($attributes);
+            if($model->{$relation}) {
+                $model->{$relation}->fill($attributes["{$relation}"] ?? $attributes);
+            }
         }
 
         $model->push();
@@ -503,7 +516,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $values
      * @param array $fields
      * @return int
-
+     * @throws RepositoryException
      */
     public function updateWhereIn(string $where, array $values, array $fields): int
     {
@@ -522,7 +535,6 @@ abstract class Repository implements RepositoryInterface
      * @param array $values
      * @param bool $force
      * @return Builder|\Illuminate\Database\Eloquent\Model|mixed
-
      */
     public function updateOrCreate(array $attributes, array $values, bool $force = false)
     {
@@ -541,8 +553,7 @@ abstract class Repository implements RepositoryInterface
      * @param int $id
      * @param bool $force
      * @return int
-
-     * @throws \Exception
+     * @throws Exception
      */
     public function destroy(int $id, $force = false): int
     {
@@ -559,15 +570,14 @@ abstract class Repository implements RepositoryInterface
      *
      * @param array $where
      * @return int
-
-     * @throws \Exception
+     * @throws RepositoryException
      */
     public function destroyWhere(array $where): int
     {
         $this->applyScope();
         $this->applyCondition($where);
 
-        $deleted = $this->model->delete();
+        $deleted = $this->getBuilder()->delete();
 
         $this->resetModel();
 
@@ -582,7 +592,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $attributes
      * @param bool $detaching
      * @return mixed
-
+     * @throws Exception
      */
     public function sync($id, $relation, array $attributes, bool $detaching = true)
     {
@@ -596,7 +606,7 @@ abstract class Repository implements RepositoryInterface
      * @param string $relation
      * @param array $attributes
      * @return mixed
-
+     * @throws Exception
      */
     public function syncWithoutDetaching($id, string $relation, array $attributes)
     {
@@ -604,21 +614,62 @@ abstract class Repository implements RepositoryInterface
     }
 
     /**
+     * Insert a single or multiple records into the database at once skipping
+     * validation and mass assignment checking.
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function insert(array $data): bool
+    {
+        return $this->getBuilder()->insert($data);
+    }
+
+    /**
+     * Insert multiple records into the database and ignore duplicates.
+     *
+     * @param array $values
+     * @return bool
+     */
+    public function insertIgnore(array $values): bool
+    {
+        if (empty($values)) {
+            return true;
+        }
+
+        foreach ($values as $key => $value) {
+            ksort($value);
+            $values[$key] = $value;
+        }
+
+        $bindings = array_values(array_filter(Arr::flatten($values, 1), function ($binding) {
+            return ! $binding instanceof RepositoryException;
+        }));
+
+        $grammar = $this->getBuilder()->toBase()->getGrammar();
+        $table = $grammar->wrapTable($this->model->getTable());
+        $columns = $grammar->columnize(array_keys(reset($values)));
+
+        $parameters = collect($values)->map(function ($record) use ($grammar) {
+            return sprintf('(%s)', $grammar->parameterize($record));
+        })->implode(', ');
+
+        $statement = "insert ignore into $table ($columns) values $parameters";
+
+        return $this->getBuilder()->getConnection()->statement($statement, $bindings);
+    }
+
+    /**
      * Return all records associated with the given model.
      *
      * @param array $columns
      * @return \Illuminate\Support\Collection
-
+     * @throws RepositoryException
      */
     public function all($columns = ['*']): Collection
     {
         $this->applyScope();
         $results = $this->getBuilder()->get($columns);
-
-        // TODO: apply search
-//        if (is_subclass_of(get_called_class(), SearchableInterface::class) && !empty($this->search) ) {
-//            $instance = $instance->search($this->search, $this->threshold, $this->entireText, $this->entireTextOnly);
-//        }
 
         $this->resetScope();
         $this->resetModel();
@@ -632,7 +683,7 @@ abstract class Repository implements RepositoryInterface
      * @param int $limit
      * @param array $columns
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-
+     * @throws RepositoryException
      */
     public function paginate(int $limit = null, array $columns = ['*']): LengthAwarePaginator
     {
@@ -650,7 +701,7 @@ abstract class Repository implements RepositoryInterface
      *
      * @param $limit
      * @return Builder
-
+     * @throws RepositoryException
      */
     public function limit($limit)
     {
@@ -668,7 +719,7 @@ abstract class Repository implements RepositoryInterface
      * @param array $where
      * @param string $column
      * @return int
-
+     * @throws RepositoryException
      */
     public function count(array $where = [], $column = '*'): int
     {
@@ -723,6 +774,7 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * Load relation with closure
+     *
      * @param $relation
      * @param Closure $closure
      * @return $this
@@ -835,21 +887,21 @@ abstract class Repository implements RepositoryInterface
 
     /**
      * @return \Illuminate\Database\Eloquent\Model|mixed
-     * @throws Exception
+     * @throws RepositoryException
      */
     protected function makeModel()
     {
         $model = $this->app->make($this->model());
 
         if (!$model instanceof Model) {
-            throw new Exception("Class {$this->model()} must be an instance of Illuminate\\Database\\Eloquent\\Model");
+            throw new RepositoryException("Class {$this->model()} must be an instance of Illuminate\\Database\\Eloquent\\Model");
         }
 
         return $this->model = $model;
     }
 
     /**
-     * @throws Exception
+     * @throws RepositoryException
      */
     protected function resetModel()
     {

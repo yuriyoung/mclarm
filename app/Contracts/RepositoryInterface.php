@@ -163,8 +163,6 @@ interface RepositoryInterface
      * @param array $attributes
      * @param bool $force
      * @return mixed
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
     public function create(array $attributes, bool $force = false);
 
@@ -176,10 +174,17 @@ interface RepositoryInterface
      * @param array $attributes
      * @param bool $force
      * @return mixed
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
     public function update($id, array $attributes, bool $force = false);
+
+    /**
+     * @param $id
+     * @param array $relations
+     * @param array $attributes
+     * @param bool $force
+     * @return mixed
+     */
+    public function updateWithRelations($id, array $relations, array $attributes, bool $force = false);
 
     /**
      * Perform a mass update where matching records are updated using whereIn.
@@ -200,8 +205,6 @@ interface RepositoryInterface
      * @param array $attributes
      * @param bool $force
      * @return mixed
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
     public function updateOrCreate(array $where, array $attributes, bool $force = false);
 
