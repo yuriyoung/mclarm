@@ -18,7 +18,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'verified_at' => $this->verified_at,
+            'verified_at' =>  $this->when($this->verified_at, (string)$this->verified_at),
             'created_at' => (string)$this->created_at,
             'updated_at' => (string)$this->updated_at,
             'deleted_at' => $this->when($this->deleted_at, (string)$this->deleted_at),
