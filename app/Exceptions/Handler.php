@@ -14,6 +14,7 @@ use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 
 class Handler extends ExceptionHandler
 {
@@ -79,16 +80,6 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        if($exception instanceof RepositoryException) {
-            $this->replacements[':message'] = $exception->getMessage();
-        }
-        else if ($exception instanceof ModelNotFoundException) {
-             $this->replacements[':message'] =
-                'No query results for model ['
-                . Str::after($exception->getModel(), 'Models\\')
-                . '] with ' .  implode(',', $exception->getIds());
-        }
-
         return parent::render($request, $exception);
     }
 
@@ -122,7 +113,7 @@ class Handler extends ExceptionHandler
     protected function prepareReplacements(Exception $exception)
     {
         $statusCode = $this->getStatusCode($exception);
-        $message = $this->isHttpException($exception) ? $exception->getMessage() : 'Server Error';
+        $message = $exception->getMessage();
         if (! $message ) {
             $message = sprintf('%d %s', $statusCode, Response::$statusTexts[$statusCode]);
         }
@@ -133,15 +124,21 @@ class Handler extends ExceptionHandler
             ':errors' => [],
         ];
 
+        if ($exception instanceof ModelNotFoundException) {
+            $replacements[':message'] =
+                'No query results for model ['
+                . Str::after($exception->getModel(), 'Models\\')
+                . '] with ' .  implode(',', $exception->getIds());
+        }
+
         if(config('app.debug')) {
             $replacements[':debug'] = [
                 'exception' => get_class($exception),
                 'file' => $exception->getFile(),
                 'line' => $exception->getLine(),
-                'trace' => explode("\n", $exception->getTraceAsString()),
-//                    collect($exception->getTrace())->map(function ($trace) {
-//                    return Arr::except($trace, ['args']);
-//                })->all(),
+                'trace' => collect($exception->getTrace())->map(function ($trace) {
+                    return Arr::except($trace, ['args']);
+                })->all(),
             ];
         }
 
@@ -157,7 +154,15 @@ class Handler extends ExceptionHandler
      */
     protected function getStatusCode(Exception $exception)
     {
-        return $this->getExceptionStatusCode($exception);
+        $statusCode = 500;
+        if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException) {
+            $statusCode = 419;
+        } else if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException) {
+            $statusCode = $exception->getCode();
+        }else if ($exception instanceof \Tymon\JWTAuth\Exceptions\JWTException) {
+            $statusCode = $exception->getCode();
+        }
+        return $this->getExceptionStatusCode($exception, $statusCode);
     }
 
     /**
