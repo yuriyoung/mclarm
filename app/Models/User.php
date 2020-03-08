@@ -43,11 +43,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->email_verified_at;
     }
 
-    public function detail()
-    {
-        return $this->hasOne(UserDetail::class)->withDefault();
-    }
-
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *
@@ -67,4 +62,15 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function socials()
+    {
+        return $this->hasMany(\App\Models\SocialAccount::class);
+    }
+
+    public function detail()
+    {
+        return $this->hasOne(UserDetail::class)->withDefault();
+    }
+
 }
