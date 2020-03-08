@@ -43,7 +43,7 @@ class OAuthController extends Controller
     {
         $this->repository = $repository;
         $this->service = $service;
-        $this->wantJson = true;//$request->wantsJson();
+        $this->wantJson = $request->wantsJson();
     }
 
     /**
