@@ -61,7 +61,7 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        $user = $this->repository->with(['detail'])->find($id);
+        $user = $this->repository->with(['detail'])->findOrFail($id);
 
         return UserResource::make($user);
     }
