@@ -176,11 +176,45 @@ abstract class Repository implements RepositoryInterface
     public function first($columns = ['*'])
     {
         $this->applyScope();
-        $result = $this->getBuilder()->firstOrFail($columns);
+        $result = $this->getBuilder()->first($columns);
 
         $this->resetModel();
 
         return $result;
+    }
+
+    /**
+     * @param array $wheres
+     * @param array $columns
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|mixed|object|null
+     * @throws RepositoryException
+     */
+    public function firstWhere(array $wheres, array $columns = ['*'])
+    {
+        $this->applyScope();
+        $this->applyCondition($wheres);
+        $model = $this->getBuilder()->first($columns);
+
+        $this->resetModel();
+
+        return $model;
+    }
+
+    /**
+     * @param array $wheres
+     * @param array $columns
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|mixed|object|null
+     * @throws \App\Exceptions\RepositoryException
+     */
+    public function firstOrWhere(array $wheres, array $columns = ['*'])
+    {
+        $this->applyScope();
+        $this->applyOrCondition($wheres);
+        $model = $this->getBuilder()->first($columns);
+
+        $this->resetModel();
+
+        return $model;
     }
 
     /**
@@ -228,7 +262,7 @@ abstract class Repository implements RepositoryInterface
     public function find(int $id, array $columns = ['*'])
     {
         $this->applyScope();
-        $model = $this->getBuilder()->findOrFail($id, $columns);
+        $model = $this->getBuilder()->find($id, $columns);
         $this->resetModel();
 
         return $model;
@@ -863,6 +897,21 @@ abstract class Repository implements RepositoryInterface
                 $this->model = $this->model->where($field, $condition, $val);
             } else {
                 $this->model = $this->model->where($field, '=', $value);
+            }
+        }
+    }
+
+    /**
+     * @param array $where
+     */
+    protected function applyOrCondition(array $where): void
+    {
+        foreach ($where as $field => $value) {
+            if(is_array($value)) {
+                list($field, $condition, $val) = $value;
+                $this->model = $this->model->orWhere($field, $condition, $val);
+            } else {
+                $this->model = $this->model->orWhere($field, '=', $value);
             }
         }
     }

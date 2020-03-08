@@ -12,4 +12,12 @@ interface UserRepositoryInterface extends RepositoryInterface
      * @return mixed
      */
     public function getLoginHistory(int $id);
+
+    /**
+     * @param array $where
+     * @param array $columns
+     * @return mixed
+     */
+    public function socialAccount(array $where, $columns = ['*']);
+
 }

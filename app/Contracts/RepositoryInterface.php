@@ -45,6 +45,21 @@ interface RepositoryInterface
      */
     public function setFreshModel(bool $fresh = true);
 
+
+    /**
+     * @param array $wheres
+     * @param array $columns
+     * @return mixed
+     */
+    public function firstWhere(array $wheres, array $columns = ['*']);
+
+    /**
+     * @param array $wheres
+     * @param array $columns
+     * @return mixed
+     */
+    public function firstOrWhere(array $wheres, array $columns = ['*']);
+
     /**
      * Return first model or new one
      *
