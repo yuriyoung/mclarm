@@ -37,19 +37,13 @@ class SocialAccountService
 
         if(! $account) {
             /** @var User $user */
-            $user = $this->repository->firstOrWhere([
+            $user = $this->repository->firstOrCreate([
                 'email' => $providerUser->getEmail(),
                 'name' => $providerUser->getName()
             ]);
-
-            if (! $user) {
-                $user = $this->repository->create([
-                    'name' => $providerUser->getName(),
-                    'email' => $providerUser->getEmail()
-                ]);
-                // create user detail ?
+            // create default record for user detail ?
+            if(!$user->detail())
                 $user->detail()->create();
-            }
 
             $user->socials()->create([
                 'provider_name' => $provider,
