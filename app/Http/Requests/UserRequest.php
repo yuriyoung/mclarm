@@ -27,16 +27,15 @@ class UserRequest extends FormRequest
         switch ($this->getMethod()) {
         case 'POST':
             return [
-                'name' => 'nullable|string|between:1,18',
+                'name' => 'required|unique:users,name|between:1,18',
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|confirmed',
             ];
         case 'PATCH':
         case 'PUT':
             return [
+                'name' => 'sometimes|unique:users,name|between:1,18',
                 'avatar' => 'nullable|dimensions:min_width=100,min_height=200',
-                'first_name' => 'nullable|string',
-                'last_name' => 'nullable|string',
                 'birthday' => 'date_format:Y-m-d|before:today',
             ];
         }
