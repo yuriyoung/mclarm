@@ -30,4 +30,27 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('GITHUB_REDIRECT'),
+    ],
+
+    'qq' => [
+        'client_id' => env('QQ_CLIENT_ID'),
+        'client_secret' => env('QQ_CLIENT_SECRET'),
+        'redirect' => env('QQ_REDIRECT'),
+    ],
+
+    'weixin' => [
+        'client_id' => env('WEIXIN_CLIENT_ID'),
+        'client_secret' => env('WEIXIN_CLIENT_SECRET'),
+        'redirect' => env('WEIXIN_REDIRECT'),
+    ],
+
+    'weibo' => [
+        'client_id' => env('WEIBO_CLIENT_ID'),
+        'client_secret' => env('WEIBO_CLIENT_SECRET'),
+        'redirect' => env('WEIBO_REDIRECT'),
+    ],
 ];
