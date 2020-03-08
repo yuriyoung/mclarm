@@ -23,6 +23,7 @@ class UserResource extends JsonResource
             'updated_at' => (string)$this->updated_at,
             'deleted_at' => $this->when($this->deleted_at, (string)$this->deleted_at),
             'detail' => UserDetailResource::make($this->whenLoaded('detail')),
+            'socials' => $this->when($this->socials, $this->socials),
         ];
     }
 }
