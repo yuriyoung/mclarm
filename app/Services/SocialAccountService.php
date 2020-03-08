@@ -47,6 +47,8 @@ class SocialAccountService
                     'name' => $providerUser->getName(),
                     'email' => $providerUser->getEmail()
                 ]);
+                // create user detail ?
+                $user->detail()->create();
             }
 
             $user->socials()->create([
