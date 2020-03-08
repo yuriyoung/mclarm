@@ -45,6 +45,18 @@ interface RepositoryInterface
      */
     public function setFreshModel(bool $fresh = true);
 
+    /**
+     * @param array $columns
+     * @return mixed
+     */
+    public function first($columns = ['*']);
+
+    /**
+     * @param int $id
+     * @param array $columns
+     * @return mixed
+     */
+    public function firstOrFail(int $id, array $columns = ['*']);
 
     /**
      * @param array $wheres
@@ -85,6 +97,13 @@ interface RepositoryInterface
      *
      */
     public function find(int $id, array $columns = ['*']);
+
+    /**
+     * @param int $id
+     * @param array $columns
+     * @return mixed
+     */
+    public function findOrFail(int $id, array  $columns = ['*']);
 
     /**
      * Find a modal by field and value

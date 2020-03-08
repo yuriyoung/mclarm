@@ -184,6 +184,22 @@ abstract class Repository implements RepositoryInterface
     }
 
     /**
+     * @param int $id
+     * @param array $columns
+     * @return Builder|Model|mixed
+     * @throws RepositoryException
+     */
+    public function firstOrFail(int $id, array $columns = ['*'])
+    {
+        $this->applyScope();
+        $result = $this->getBuilder()->firstOrFail($columns);
+
+        $this->resetModel();
+
+        return $result;
+    }
+
+    /**
      * @param array $wheres
      * @param array $columns
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|mixed|object|null
@@ -263,6 +279,22 @@ abstract class Repository implements RepositoryInterface
     {
         $this->applyScope();
         $model = $this->getBuilder()->find($id, $columns);
+        $this->resetModel();
+
+        return $model;
+    }
+
+    /**
+     * @param int $id
+     * @param array $columns
+     * @return Builder|Builder[]|\Illuminate\Database\Eloquent\Collection|Model
+     * @throws RepositoryException
+     */
+    public function findOrFail(int $id, array  $columns = ['*'])
+    {
+        $this->applyScope();
+        $model = $this->getBuilder()->findOrFail($id, $columns);
+
         $this->resetModel();
 
         return $model;
