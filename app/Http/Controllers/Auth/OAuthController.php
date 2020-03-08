@@ -38,7 +38,7 @@ class OAuthController extends Controller
     {
         $this->repository = $repository;
         $this->service = $service;
-        $this->wantJson = $request->wantsJson();
+        $this->wantJson = $request->expectsJson();
     }
 
     /**
