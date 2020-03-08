@@ -36,11 +36,13 @@ $factory->define(App\Models\UserDetail::class, function (Faker $faker) {
         'gender' => $gender,
         'birthday' => $faker->date('Y-m-d', 'now'),
         'career' => $faker->jobTitle,
+        'location' => $faker->locale,
+        'company' => $faker->company,
         // $faker->url Exception  a error if faker_locale = 'zh_CN'
         'website' => 'www.' . $faker->word() . $faker->randomElement(['.com', '.org', '.io', '.cn', '.me']),
         'address_home' => $faker->streetAddress,
         'address_work' => $faker->address,
-        'signature' => $faker->text(120),
+        'bio' => $faker->text(120),
         'about' => $faker->paragraph(5),
     ];
 });
