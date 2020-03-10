@@ -26,6 +26,7 @@ class UserLoggedInListener
      */
     public function handle(UserLoggedIn $event)
     {
-        //
+        //TODO: logging user logged in event
+        // ...
     }
 }
