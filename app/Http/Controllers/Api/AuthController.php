@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Contracts\UserRepositoryInterface;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Services\SocialAccountService;
 use Illuminate\Support\Facades\Auth;
@@ -45,19 +46,14 @@ class AuthController extends Controller
     /**
      * Handle a login request to the application.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param \App\Http\Requests\UserRequest $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      *
      * @throws \Illuminate\Validation\ValidationException
      * @throws AuthenticationException
      */
-    public function login(Request $request)
+    public function login(UserRequest $request)
     {
-        $request->validate([
-            'email' => 'email|required',
-            'password' => 'required',
-        ]);
-
         if (method_exists($this, 'hasTooManyLoginAttempts') &&
             $this->hasTooManyLoginAttempts($request)) {
             $this->fireLockoutEvent($request);
