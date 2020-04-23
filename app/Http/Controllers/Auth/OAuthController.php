@@ -55,7 +55,7 @@ class OAuthController extends Controller
         try {
             return Socialite::driver($provider)->redirect();
         } catch (\Exception $e) {
-            return $this->sendFailedResponse($e->getMessage() . "aaaaaaaaaaa" ?: "Unable to login with {$provider}, try with another provider to login.");
+            return $this->sendFailedResponse($e->getMessage() . "" ?: "Unable to login with {$provider}, try with another provider to login.");
         }
     }
 
